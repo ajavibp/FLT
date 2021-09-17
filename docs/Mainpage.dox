@@ -1,0 +1,112 @@
+/** \mainpage Fuzzy Logic Tools
+
+Fuzzy Logic Tools (FLT) is a C++ framework for storage, analysis and design of fully general multiple-input multiple-output (MIMO) Takagi-Sugeno fuzzy control systems, without constraints in the order of either the inputs or the output vectors.
+
+FLT has been developed from research works of the Dr. Antonio Javier Barragán Piña under the direction of the Professor of Engineering Systems and Automation, Dr. José Manuel Andújar Márquez, both belonging to the "Control and Robotics" research group of the University of Huelva.
+
+FLT is designed to store general Takagi Sugeno (TS) fuzzy systems, without restriction on size of input and output vectors. FLT nor limit the type or distribution of the membership functions used, even it allows mixing of different membership functions in the same antecedent. The storage of fuzzy models is done using the Membership, Rule and System classes. There are many tools that can store fuzzy models similarly, and even more flexible as it does FLT. However, the biggest advantage of FLT are the analysis and design functions that are implemented for the type of fuzzy system defined above:
+
+In utilities.hpp some functions that may be of interest to the handling of fuzzy systems are defined, for example, the reading/writing of fuzzy systems from/in text files, the evaluation of a fuzzy control system in closed loop, the extraction of a subsystem from a given fuzzy system, etc.
+
+Functions grouped in derivatives.hpp calculate several the derivatives of a fuzzy system. These calculations may be of interest for the analysis and design of fuzzy control systems. For example, it is possible to calculate the derivatives of a fuzzy system with respect to its inputs or parameters, or obtain a linearized model of a fuzzy system at a given point.
+
+Since the functions provided by derivative.hpp, several methods for the parametric adaptaition of fuzzy systems have been developed based on the extended Kalman filter. These algorithms are in Kalman.hpp.
+
+Kalman.hpp implements the adaptation of a fuzzy model by the extended Kalman filter from the derivatives included in derivatives.hpp.
+
+In aux_matlab.hpp some util functions to use with MATLAB© API are defined, as the reading/writing of fuzzy models from/to MATLAB©, and the conversion of row-major matrices in column-major and vice versa.
+
+Finally, several examples of programming MEX functions are presented, which can be useful for the analysis and design of fuzzy control systems using MATLAB©.
+\htmlonly
+<p>
+	Fuzzy Logic Tools (<a class="el" href="db/de5/namespace_f_l_t.html" title="Fuzzy Logic Tools (FLT) namespace.">FLT</a>) is <strong>free software</strong>: you can redistribute it and/or modify it under the terms of the <a href="http://www.gnu.org/licenses/">GNU General Public License</a> as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</p>
+
+<p>
+	Fuzzy Logic Tools uses <a href="http://gnu.org/software/gsl">GNU Scientific Library (GSL)</a> and <a href="http://math.nist.gov/tnt">Template Numerical Toolkit (TNT)</a>.</p>
+<p>
+	For more information, please contact with authors.</p>
+<p>
+	Copyright (c) 2004-2011</p>
+
+<h2><a class="anchor" id="Authors"></a>Authors</h2>
+<ul>
+	<li>
+		Dr. <a href="http://uhu.es/antonio.barragan">Antonio Javier Barrag&aacute;n Pi&ntilde;a</a>, antonio.barragan&nbsp;_at_ diesia.uhu.es</li>
+	<li>
+		Dr. Jos&eacute; Manuel And&uacute;jar M&aacute;rquez, andujar _at_ diesia.uhu.es</li>
+</ul>
+<h2><a class="anchor" id="Collaborator"></a>Collaborator</h2>
+<ul>
+	<li>
+		Mariano Jos&eacute; Aznar Torres, marianojose.aznar&nbsp;_at_&nbsp;alu.uhu.es</li>
+</ul>
+<p>
+	<a href="http://uhu.es/diesia">Department of Electronic Engineering, Computer Systems and Automation</a>, <a href="http://uhu.es">University of Huelva</a> (Spain).</p>
+<p>
+	Special thanks to Jos&eacute; Manuel Mart&iacute;n Ramos for his continued support.</p>
+<h2><a class="anchor" id="Documentation"></a>Documentation</h2>
+<ul>
+	<li>
+		<a class="el" href="db/de5/namespace_f_l_t.html" title="Fuzzy Logic Tools (FLT) namespace.">FLT</a> is documented by&nbsp;<a href="http://www.doxygen.org/index.html">doxygen</a>. This is the online version of this documentation</a>. A <a href="http://uhu.es/antonio.barragan/FLTHelp/Fuzzy_Logic_Tools_Reference_Manual_v1.0.pdf">PDF version</a> is also available.</li>
+</ul>
+\endhtmlonly
+
+\section downloadFLT Obtaining FLT, Help and Bugs reports:
+
+You can download the latest versions of the FLT and access to forums and bugs tracking system at <a href="http://sourceforge.net/projects/fuzzylogictools">http://sourceforge.net/projects/fuzzylogictools</a>.
+
+Additional information, news and related projects are available from the FLT website: <a href="http://uhu.es/antonio.barragan/flt">http://uhu.es/antonio.barragan/flt</a>.
+
+\section refers Publications/references
+If you would like to refer the Fuzzy Logic Tools (FLT) in a journal paper or similar, the recommended way is to cite this reference manual or following papers:\n
+
+A.J. Barragán and J.M. Andújar, <em>Fuzzy Logic Tools Reference Manual</em>, ISBN 978-84-15147-32-9, http://uhu.es/antonio.barragan/flt
+
+Andújar, J. M. and Barragán, A. J. (2005). A methodology to design stable nonlinear fuzzy control systems. <em>Fuzzy Sets and Systems</em>, 154(2):157–181.
+
+Andújar, J. M., Barragán, A. J., and Gegúndez, M. E. (2009). A general and formal methodology for designing stable nonlinear fuzzy control systems. <em>IEEE Transactions on Fuzzy Systems</em>, 17(5):1081–1091.
+
+Barragán Piña, A. J. (2009). <em>Síntesis de sistemas de control borroso estables por diseño</em>. ISBN 978-84-92944-72-9. University of Huelva. http://uhu.es/antonio.barragan/thesis
+
+Andújar, J. M. and Barragán, A. J. (2010). A formal methodology for the analysis and design of nonlinear fuzzy control systems. In <em>Fuzzy Systems (FUZZ), 2010 IEEE International Conference on</em>, number 1, pages 66–74, Barcelona, Spain.
+
+Barragán Piña, A. J., Andújar Márquez, J. M., Aznar Torres, M., and Jiménez Avello, A. (2011a). Methodology for adapting the parameters
+of a fuzzy system using the extended Kalman filter. In <em>7th conference of the European Society for Fuzzy Logic and Technology, EUSFLAT (LFA-2011)</em>, Aix-les-Bains, France.
+
+Barragán Piña, A. J., Andújar Márquez, J. M., Aznar Torres, M., and Jiménez Avello, A. (2011b). Practical application of the extended
+Kalman filter to fuzzy modeling. In <em>7th conference of the European Society for Fuzzy Logic and Technology, EUSFLAT (LFA-2011)</em>, Aix-les-Bains, France.
+
+\section installFLT Installing and using FLT
+FLT has been written in C++. This software has been compiled and tested, in 32 and 64 bits architectures, on GNU/Linux using GCC and on Microsoft© operating systems using MinGW (http://www.mingw.org). FLT can be used to make MATLAB© function via MATLAB© API.
+
+FLT is source code, so you do not need to be installed. If you wish, you can copy the directory "flt" to a route included in the search path of your compiler, for example, "/usr/include" in GNU/Linux or "C:\MinGW\include" if you use MinGW in Microsoft Windows©.
+
+This example program obtains the output of a closed loop fuzzy system and its jacobian matrix.
+\include example.cpp
+
+The example.cpp file is in the docs folder. You can compile it from this folder using this sentence:
+\code
+g++ example.cpp ../src/membership.cpp ../src/rule.cpp ../src/system.cpp ../src/utilities.cpp ../src/fuzzyIO.cpp ../src/derivatives.cpp -o example
+\endcode
+
+For test this example function with the Plant.txt and Controller.txt from matlab_utilities folder, use:
+\code
+./example ../matlab_utilities/Plant.txt ../matlab_utilities/Controller.txt 0 0
+\endcode
+The output should coincide approximately with:
+\code
+    Closed loop output:
+    0.0409887
+    0.340054
+ 
+    Closed loop Jacobian matrix:
+    -2.58935  1.98356
+    2.30224  -7.94545
+\endcode
+
+\section nowarranty No Warranty
+Fuzzy Logic Tools (FLT) software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. It is your
+responsibility to validate the behavior of the routines and their accuracy using the source code provided, or to purchase
+support and warranties from commercial redistributors. Consult the GNU General Public license for further details.
+*/
