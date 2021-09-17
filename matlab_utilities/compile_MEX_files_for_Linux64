@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# The FLT, TNT and GSL libraries must be in your include path (or added to COMPILE_OPTIONS).
+
+### MATLAB root folder ### USE YOUR MATLAB ROOT HERE ###
+MATLAB_ROOT=~/.matlab/MATLAB-R2014a/
+
+### Compiler to use. Make sure it's compatible with your version of MATLAB ###
+Gpp=g++-4.7
+
+### Options ###
+COMPILE_OPTIONS="-I$MATLAB_ROOT/extern/include -DMATLAB_MEX_FILE -ansi -D_GNU_SOURCE -fPIC -fno-omit-frame-pointer -pthread -O2 -DNDEBUG"
+BUILD_OPTIONS="-O2 -pthread -shared -Wl,--version-script,$MATLAB_ROOT/extern/lib/glnxa64/mexFunction.map -Wl,--no-undefined -Wl,-rpath-link,$MATLAB_ROOT/bin/glnxa64 -L$MATLAB_ROOT/bin/glnxa64 -lmx -lmex -lmat -lm"
+
+###############################################################################
+cd ../src
+
+$Gpp -c $COMPILE_OPTIONS *[^K].cpp
+$Gpp -c $COMPILE_OPTIONS -DHAVE_INLINE "Kalman.cpp"
+
+mv -f *.o ../matlab_utilities
+cd ../matlab_utilities
+
+$Gpp -c $COMPILE_OPTIONS *.cpp
+
+FLT_CORE="membership.o rule.o system.o utilities.o fuzzyIO.o aux_matlab.o"
+
+$Gpp $BUILD_OPTIONS -o activation.mexa64 activation.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o antec2mat.mexa64 antec2mat.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o aproxjac.mexa64 aproxjac.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o aproxlinear.mexa64 aproxlinear.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o conseq2mat.mexa64 conseq2mat.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o extractPoints.mexa64 extractPoints.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o initializeController.mexa64 initializeController.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o fis2txt.mexa64 fis2txt.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o fuz2mat.mexa64 fuz2mat.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o fuzcomb.mexa64 fuzcomb.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o fuzderconseq.mexa64 fuzderconseq.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o fuzderaffine.mexa64 fuzderaffine.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o fuzderantec.mexa64 fuzderantec.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o fuzderparam.mexa64 fuzderparam.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o fuzeval.mexa64 fuzeval.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o fuzjac.mexa64 fuzjac.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o fuzlinear.mexa64 fuzlinear.o $FLT_CORE derivatives.o 
+$Gpp $BUILD_OPTIONS -o fuzprint.mexa64 fuzprint.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o Kalmanantec.mexa64 Kalmanantec.o $FLT_CORE derivatives.o Kalman.o -lgsl -lm -lgslcblas 
+$Gpp $BUILD_OPTIONS -o Kalmanconseq.mexa64 Kalmanconseq.o $FLT_CORE derivatives.o Kalman.o -lgsl -lm -lgslcblas 
+$Gpp $BUILD_OPTIONS -o Kalmanfuz.mexa64 Kalmanfuz.o $FLT_CORE derivatives.o Kalman.o -lgsl -lm -lgslcblas 
+$Gpp $BUILD_OPTIONS -o mat2antec.mexa64 mat2antec.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o mat2conseq.mexa64 mat2conseq.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o mat2fuz.mexa64 mat2fuz.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o fuzsubsystem.mexa64 fuzsubsystem.o $FLT_CORE 
+$Gpp $BUILD_OPTIONS -o txt2fis.mexa64 txt2fis.o $FLT_CORE
+
+rm *.o
+
+# #############################################################################
+#
+#    Copyright (C) 2004-2015
+#    ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
+#    http://uhu.es/antonio.barragan
+#
+#    Collaborators:
+#    JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
+#
+#    DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
+#    ETSI, UNIVERSITY OF HUELVA (SPAIN)
+#
+#    For more information, please contact with authors.
+#
+#    This software is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This software is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# #############################################################################

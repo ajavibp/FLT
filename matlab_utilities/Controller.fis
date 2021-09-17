@@ -1,0 +1,66 @@
+[System]
+Name='Controller'
+Type='sugeno'
+Version=2.0
+NumInputs=2
+NumOutputs=2
+NumRules=8
+AndMethod='prod'
+OrMethod='probor'
+ImpMethod='prod'
+AggMethod='max'
+DefuzzMethod='wtaver'
+
+[Input1]
+Name='Input1'
+Range=[-30 30]
+NumMFs=8
+MF1='R1-In1-Out1':'gaussmf',[2.17904508342355 -9.771525179]
+MF2='R2-In1-Out1':'gaussmf',[10.1936337647686 -8.336735384]
+MF3='R3-In1-Out1':'gaussmf',[6.47800051897896 12.57083097]
+MF4='R4-In1-Out1':'gaussmf',[8.03040976423891 7.047153859]
+MF5='R1-In1-Out2':'gaussmf',[11.3861787274756 -6.012055886]
+MF6='R2-In1-Out2':'gaussmf',[7.49118564682883 -13.53243302]
+MF7='R3-In1-Out2':'gaussmf',[8.45847101757902 3.882136203]
+MF8='R4-In1-Out2':'gaussmf',[6.48610876748194 18.15973798]
+
+[Input2]
+Name='Input2'
+Range=[-30 30]
+NumMFs=8
+MF1='R1-In2-Out1':'gaussmf',[9.68623883581885 -9.052332728]
+MF2='R2-In2-Out1':'gaussmf',[2.8752142322669 6.714480842]
+MF3='R3-In2-Out1':'gaussmf',[7.8094964111837 -12.98493611]
+MF4='R4-In2-Out1':'gaussmf',[7.27341232164363 15.07442624]
+MF5='R1-In2-Out2':'gaussmf',[9.80675750749246 -9.697453164]
+MF6='R2-In2-Out2':'gaussmf',[12.4533378752549 12.43251263]
+MF7='R3-In2-Out2':'gaussmf',[10.8938095842809 -15.57189179]
+MF8='R4-In2-Out2':'gaussmf',[12.9561356060352 14.81384186]
+
+[Output1]
+Name='Output1'
+Range=[-100 100]
+NumMFs=4
+MF1='R1-Out1':'linear',[-4.658600387 -0.004382666231 0]
+MF2='R2-Out1':'linear',[-5.694835096 0 0.0002]
+MF3='R3-Out1':'linear',[-3.013906369 0.003852790387 0.00047]
+MF4='R4-Out1':'linear',[-2.617256037 0.001549938772 0.00044]
+
+[Output2]
+Name='Output2'
+Range=[-100 100]
+NumMFs=4
+MF1='R1-Out2':'linear',[1.831640165 -8.42434416 0.0004]
+MF2='R2-Out2':'linear',[0.3397280578 -5.211748013 0.0003189339965]
+MF3='R3-Out2':'linear',[1.317970612 -9.156514073 0]
+MF4='R4-Out2':'linear',[2.060488092 -2.807485496 -0.000504]
+
+[Rules]
+1 1, 1 0 (1) : 1
+2 2, 2 0 (1) : 1
+3 3, 3 0 (1) : 1
+4 4, 4 0 (1) : 1
+5 5, 0 1 (1) : 1
+6 6, 0 2 (1) : 1
+7 7, 0 3 (1) : 1
+8 8, 0 4 (1) : 1
