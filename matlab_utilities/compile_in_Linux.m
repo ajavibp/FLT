@@ -8,13 +8,17 @@
 % The Mex environment of MATLAB must be configured with gcc (mex -setup).
 %
 
-clc
+% Install 'libgsl-dev'
+
+% Add FLT and TNT headers path
+setenv('CPATH',[':/home/javi/Datos/Investigacion/Código/include:/home/javi/Datos/Investigacion/Código/fuzzylogictools/flt/']);
 
 directory = mfilename('fullpath');
 directory = strcat(directory(1:end-length(mfilename)), '../src');
 directory = cd(directory);
 
 % Compile the base code
+
 mex -largeArrayDims membership.cpp -c
 mex -largeArrayDims rule.cpp -c
 mex -largeArrayDims system.cpp -c
@@ -30,6 +34,7 @@ cd ../matlab_utilities
 mex -largeArrayDims aux_matlab.cpp -c
 
 % Compile and link mex -largeArrayDims files
+
 mex -largeArrayDims activation.cpp membership.o rule.o system.o utilities.o fuzzyIO.o aux_matlab.o
 mex -largeArrayDims antec2mat.cpp membership.o rule.o system.o utilities.o fuzzyIO.o aux_matlab.o
 mex -largeArrayDims aproxjac.cpp membership.o rule.o system.o utilities.o fuzzyIO.o aux_matlab.o derivatives.o
@@ -63,7 +68,7 @@ cd(directory);clear directory
 
 % #############################################################################
 %
-%    Copyright (C) 2004-2015
+%    Copyright (C) 2004-2022
 %    ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 %    http://uhu.es/antonio.barragan
 %

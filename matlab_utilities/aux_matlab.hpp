@@ -4,7 +4,6 @@
 
     Collaborators:
     JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
     DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
     ETSI, UNIVERSITY OF HUELVA (SPAIN)
@@ -37,6 +36,10 @@
  
 #include "mex.h" // MATLAB© API
 #include <flt/utilities.hpp>
+
+#ifndef M_SQRT2
+	#define M_SQRT2    1.41421356237309504880168872421      /* sqrt(2) */
+#endif
 
 namespace FLT // Use the FTL (Fuzzy Logic Tools) namespace
 {

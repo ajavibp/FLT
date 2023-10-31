@@ -1,10 +1,9 @@
-/*	Copyright (C) 2004-2015
+/*	Copyright (C) 2004-2022
 	ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 	http://uhu.es/antonio.barragan
 
 	Collaborators:
 	JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
 	DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
 	ETSI, UNIVERSITY OF HUELVA (SPAIN)
@@ -45,7 +44,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
 	size_t i,q,n,model;
 	double *X,*J,*d,h;
-	System S[2];
+	System P, C;
 	char Sist[MAX_FILE_NAME];
 	char error[MAX_FILE_NAME];
 	
@@ -65,32 +64,32 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	
 	if (mxGetN(prhs[0])!=1)
 		ERRORMSG(E_Column)
-	
-	for (model=1;model<3;model++)
+
+	if (readModel(prhs[1],P))
 	{
-		if (readModel(prhs[model],S[model-1]))
-		{
-			sprintf(error,"%s %lu.\n",E_Model, model);
-			ERRORMSG(error)
-		}
+		sprintf(error,"%s %lu.\n",E_Model, 1);
+		ERRORMSG(error)
 	}
 	
-	if ((nrhs==3) && n!=S[0].outputs())
+	if (readModel(prhs[2],C))
+	{
+		sprintf(error,"%s %lu.\n",E_Model, 2);
+		ERRORMSG(error)
+	}
+
+	if (n!=P.outputs())
 		ERRORMSG(E_PointCoherent)
 		
-	if ((nrhs==2) && n!=S[0].inputs())
-		ERRORMSG(E_PointCoherent)
-	
 	Array2D<double> Jac(n,n);
 	if (nrhs==4)
 	{
 		h = *mxGetPr(prhs[3]);
 		if (h<=0)
 			ERRORMSG(E_H_GE_0)
-		Jac = jacobianAprox(S[0], S[1], X, h);
+		Jac = jacobianAprox(P, C, X, h);
 	}
 	else
-		Jac = jacobianAprox(S[0], S[1], X);
+		Jac = jacobianAprox(P, C, X);
 		
 	if (!Jac.dim1())
 		ERRORMSG(E_NoCoherent)

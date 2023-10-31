@@ -1,10 +1,9 @@
-/*	Copyright (C) 2004-2015
+/*	Copyright (C) 2004-2022
 	ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 	http://uhu.es/antonio.barragan
 
 	Collaborators:
 	JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
 	DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
 	ETSI, UNIVERSITY OF HUELVA (SPAIN)

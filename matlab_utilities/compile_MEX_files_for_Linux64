@@ -3,7 +3,7 @@
 # The FLT, TNT and GSL libraries must be in your include path (or added to COMPILE_OPTIONS).
 
 ### MATLAB root folder ### USE YOUR MATLAB ROOT HERE ###
-MATLAB_ROOT=~/.matlab/MATLAB-R2014a/
+MATLAB_ROOT=~/.matlab/MATLAB_R2022a/
 
 ### Compiler to use. Make sure it's compatible with your version of MATLAB ###
 Gpp=g++-4.7

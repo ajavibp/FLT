@@ -1,10 +1,9 @@
-/*	Copyright (C) 2004-2015
+/*	Copyright (C) 2004-2022
 	ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 	http://uhu.es/antonio.barragan
 
 	Collaborators:
 	JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
 	DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
 	ETSI, UNIVERSITY OF HUELVA (SPAIN)
@@ -59,11 +58,9 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		if (mxGetN(prhs[1])!=mxGetN(prhs[2]))
 			ERRORMSG(E_NumberArg)
 	}
- 
 	System S;
 	if (readModel(prhs[0],S))
 		ERRORMSG(E_Model)
-
 	if (nrhs==1)
 	{
 		length = S.NumberOfAntecedents();
@@ -80,7 +77,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			length += S.readRule(out,rule)->NumberOfAntecedents();
 		}
 	}
-
 	plhs[0] = mxCreateDoubleMatrix(length,1,mxREAL);
 	Array1D<double> Data(length);
 
@@ -94,7 +90,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			out = ((size_t)*(mxGetPr(prhs[1])+i))-1;
 			rule = ((size_t)*(mxGetPr(prhs[2])+i))-1;
 			Array1D<double> tempData = S.readRule(out,rule)->getAntecedents();
-			
 			for (size_t d=0;d<tempData.dim();d++)
 				Data[length+d] = tempData[d];
 			length += tempData.dim();

@@ -1,10 +1,9 @@
-/*  Copyright (C) 2004-2015
+/*  Copyright (C) 2004-2022
 	ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 	http://uhu.es/antonio.barragan
 
 	Collaborators:
 	JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
 	DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
 	ETSI, UNIVERSITY OF HUELVA (SPAIN)
@@ -44,7 +43,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	size_t i,j,r,s;
 	char Output[MAX_FILE_NAME];
 	char error[MAX_FILE_NAME];
-	size_t sysnumber,in,outputs=0,*rules;
+	size_t sysnumber,in,outputs=0,*rules,totalRules=0;
 	
 	if (nlhs>1)
 	{
@@ -93,7 +92,10 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	j = 0;
 	for (s=0;s<sysnumber;s++)
 		for (i=0;i<S[s].outputs();i++,j++)
+		{
 			rules[j] = S[s].rules(i);
+			totalRules += rules[j];
+		}
 			
 	System *Sall = new System(in,outputs,rules);
 	outputs = 0;
@@ -166,9 +168,25 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	}
 	else
 	{
-		const char* names[]={"name","type","andMethod","orMethod","defuzzMethod","impMethod","aggMethod","input","output","rule"};
-		mwSize dim[]={1,1};
-		plhs[0]=mxCreateStructArray(2,dim,10,names);
+		mxArray *parameters[12];
+		parameters[0] = mxCreateString("NumInputs");
+		parameters[1] = mxCreateDoubleScalar(Sall->inputs());
+		parameters[2] = mxCreateString("NumInputMFs");
+		parameters[3] = mxCreateDoubleScalar(totalRules);
+		parameters[4] = mxCreateString("NumOutputs");
+		parameters[5] = mxCreateDoubleScalar(Sall->outputs());
+		parameters[6] = mxCreateString("NumOutputMFs");
+		mxArray *numOutMF = mxCreateDoubleMatrix(1,Sall->outputs(),mxREAL);
+		for (int j=0;j<Sall->outputs();j++)
+			*(mxGetPr(numOutMF)+j) = Sall->rules(j);
+		parameters[7] = numOutMF;
+		parameters[8] = mxCreateString("AddRules");
+		parameters[9] = mxCreateString("none");
+		parameters[10] = mxCreateString("Name");
+		parameters[11] = mxCreateString(U_FISName);
+		if (mexCallMATLAB(1, &plhs[0], 12, parameters, "sugfis"))
+			ERRORMSG(E_FISOut)
+
 		if(System2FIS(*Sall, plhs[0]))
 		{
 			mxDestroyArray(plhs[0]);

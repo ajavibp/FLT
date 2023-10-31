@@ -1,10 +1,9 @@
-/*  Copyright (C) 2004-2015
+/*  Copyright (C) 2004-2022
 	ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 	http://uhu.es/antonio.barragan
 
 	Collaborators:
 	JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
 	DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
 	ETSI, UNIVERSITY OF HUELVA (SPAIN)
@@ -86,17 +85,12 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		if (m!=(S.inputs()-n))
 			ERRORMSG(E_PointCoherent)
 	}
-	else if(m!=0)
-	{
-		U = new double[m];
-		for (i=0;i<m;i++)
-			U[i]=0;
-	}
 	else
 		U = NULL;
-	
+
 	plhs[0] = mxCreateDoubleMatrix(n,n,mxREAL);
 	M_A = mxGetPr(plhs[0]);
+
 	if (!plhs[0] || !M_A)
 	{
 		if (nrhs==2 && m!=0)
@@ -104,6 +98,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		mxDestroyArray(plhs[0]);
 		ERRORMSG(E_NumberArgOut)
 	}
+
 	if (nlhs>1)
 	{
 		plhs[1] = mxCreateDoubleMatrix(n,m,mxREAL);
@@ -117,6 +112,7 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			ERRORMSG(E_NumberArgOut)
 		}
 	}
+
 	if (nlhs==3)
 	{
 		plhs[2] = mxCreateDoubleMatrix(n,1,mxREAL);
@@ -131,7 +127,6 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			ERRORMSG(E_NumberArgOut)
 		}
 	}
-	
 	Array2D<double> A(n,n), B(n,m);
 	Array1D<double> F(n);
 	if (nrhs==4)
@@ -139,11 +134,11 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		h=mxGetScalar(prhs[3]);
 		if (h<=0)
 			ERRORMSG(E_H_GE_0)
+
 		A = jacobianAprox (S, X, U, B, F, h);
 	}
 	else
 		A = jacobianAprox (S, X, U, B, F);
-	
 	if(!A.dim1())
 	{
 		if (nrhs==2 && m!=0)
@@ -155,20 +150,17 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 			mxDestroyArray(plhs[2]);
 		ERRORMSG(U_Overflow)
 	}
-	
 	for (q=0,countA=0;q<n;q++)
 	{
 		for (i=0;i<n;i++,countA++)
 			*(M_A + countA) = A[i][q];
 	}
-	
 	if (nlhs>1)
 	{
 		for (j=0,countB=0;j<m;j++)
 			for (i=0;i<n;i++,countB++)
 				*(M_B + countB) = B[i][j];
 	}
-	
 	if (nlhs==3)
 		for (q=0;q<n;q++)
 			M_F[q] = F[q];

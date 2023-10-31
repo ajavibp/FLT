@@ -1,10 +1,9 @@
-/*  Copyright (C) 2004-2015
+/*  Copyright (C) 2004-2022
 	ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
 	http://uhu.es/antonio.barragan
 
 	Collaborators:
 	JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
-	MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
 
 	DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
 	ETSI, UNIVERSITY OF HUELVA (SPAIN)
@@ -106,9 +105,31 @@ void mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	
 	delete [] outputs;
 	delete [] rules;
-	const char* names[]={"name","type","andMethod","orMethod","defuzzMethod","impMethod","aggMethod","input","output","rule"};
-	mwSize dim[] = {1,1};
-	plhs[0] = mxCreateStructArray(2,dim,10,names);
+	
+	// Create the new FIS (Subsystem)
+	int numInMF = 0;
+	mxArray *numOutMF = mxCreateDoubleMatrix(1,Snew.outputs(),mxREAL);
+	for (int j=0;j<Snew.outputs();j++)
+	{
+		numInMF += Snew.rules(j);
+		*(mxGetPr(numOutMF)+j) = Snew.rules(j);
+	}
+
+	mxArray *parameters[12];
+	parameters[0] = mxCreateString("NumInputs");
+	parameters[1] = mxCreateDoubleScalar(Snew.inputs());
+	parameters[2] = mxCreateString("NumInputMFs");
+	parameters[3] = mxCreateDoubleScalar(numInMF);
+	parameters[4] = mxCreateString("NumOutputs");
+	parameters[5] = mxCreateDoubleScalar(Snew.outputs());
+	parameters[6] = mxCreateString("NumOutputMFs");
+	parameters[7] = numOutMF;
+	parameters[8] = mxCreateString("AddRules");
+	parameters[9] = mxCreateString("none");
+	parameters[10] = mxCreateString("Name");
+	parameters[11] = mxCreateString(U_FISName);
+	if (mexCallMATLAB(1, &plhs[0], 12, parameters, "sugfis"))
+		ERRORMSG(E_FISOut)
 	if(System2FIS(Snew,plhs[0]))
 	{
 		mxDestroyArray(plhs[0]);

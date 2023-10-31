@@ -56,10 +56,18 @@ int FLT::readModel(const mxArray *model, System &S)
 	else
 	{
 		// Is a FIS variable
-		if (!mxIsStruct(model) || (mxGetNumberOfFields(model)<10 && mxGetNumberOfFields(model)>13))
+		if (!mxIsClass(model, "sugfis"))
+		{
+			mexPrintf("%s of class ''sugfis''\n\n",E_NoFIS);
 			return 3;
+		}
+
 		if(FIS2System(model,S))
+		{
+			mexPrintf("%s. FIS2System fails.\n\n",E_NoFIS);
 			return 4;
+		}
+
 	}
 	return 0;
 }
@@ -67,58 +75,27 @@ int FLT::readModel(const mxArray *model, System &S)
 // FIS2System #################################################################
 int FLT::FIS2System(const mxArray *FIS, System &S)
 {
-	mxArray *temp, *inputs, *outputs, *rules;
+	mxArray *temp, *inputs, *outputs, *rules, *char_array[1];
 	char text[MAX_CHAR_LONG];
 	size_t n,m,M_in,M_out,M_R,j,i;
 
-	// Initial checks
-	i = (size_t)mxGetNumberOfFields(FIS);
-	if (i<10 || i>13)
-	{
-		mexPrintf("%s\n",E_NoFIS);
-		mexPrintf("%s\n\n",U_SeeManual);
-		return 1;
-	}
+	// --- Initial checks ---
 
-	// Type must be SUGENO
-	temp = mxGetFieldByNumber(FIS,0,mxGetFieldNumber(FIS,"type"));
-	if (mxGetString(temp,text,MAX_CHAR_LONG))
-	{
-		mexPrintf("%s\n",E_Model);
-		mexPrintf("%s\n",E_NoFIS);
-		mexPrintf("%s\n\n",U_SeeManual);
-		return 1;
-	}
-	if (strcasecmp(text,"SUGENO"))
-	{
-		mexPrintf("%s\n\n",E_NoSugeno);
-		return 1;
-	}
-	
 	// Inference must be PROD
-	temp = mxGetFieldByNumber(FIS,0,mxGetFieldNumber(FIS,"andMethod"));
-	if (mxGetString(temp,text,MAX_CHAR_LONG))
-	{
-		mexPrintf("%s.\n",E_Model);
-		mexPrintf("%s\n",E_NoFIS);
-		mexPrintf("%s\n\n",U_SeeManual);
-		return 1;
-	}
+	temp = mxGetProperty(FIS,0,"AndMethod");
+	
+	mexCallMATLAB(1, char_array, 1, &temp, "char");	mxGetString(char_array[0],text,MAX_CHAR_LONG); // Dirty way to convert String to char array (MATLAB API can't manager Strings objetcs)
 	if (strcasecmp(text,"PROD"))
 	{
 		mexPrintf("%s\n\n",E_NoProd);
 		return 1;
 	}
-	
+
 	// Defuzzification method must be WTAVER
-	temp = mxGetFieldByNumber(FIS,0,mxGetFieldNumber(FIS,"defuzzMethod"));
-	if (mxGetString(temp,text,MAX_CHAR_LONG))
-	{
-		mexPrintf("%s\n",E_Model);
-		mexPrintf("%s\n",E_NoFIS);
-		mexPrintf("%s\n\n",U_SeeManual);
-		return 1;
-	}
+	temp = mxGetProperty(FIS,0,"DefuzzificationMethod");
+
+	mexCallMATLAB(1, char_array, 1, &temp, "char");	mxGetString(char_array[0],text,MAX_CHAR_LONG); // Dirty way to convert String to char array
+
 	if (strcasecmp(text,"WTAVER"))
 	{
 		mexPrintf("%s\n\n",E_NoSumProm);
@@ -127,9 +104,9 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 
 	// Reads model parameters
 
-	inputs = mxGetFieldByNumber(FIS,0,mxGetFieldNumber(FIS,"input")); // Inputs struct
-	outputs = mxGetFieldByNumber(FIS,0,mxGetFieldNumber(FIS,"output")); // Outputs struct
-	rules = mxGetFieldByNumber(FIS,0,mxGetFieldNumber(FIS,"rule")); // Rules struct
+	inputs = mxGetProperty(FIS,0,"Inputs");
+	outputs = mxGetProperty(FIS,0,"Outputs");
+	rules = mxGetProperty(FIS,0,"Rules");
 
 	M_in = (size_t)mxGetN(inputs); // Number of inputs
 	M_out = (size_t)mxGetN(outputs); // Number of outputs
@@ -143,7 +120,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 		mxDestroyArray(rules);
 		return 2;
 	}
-	
+
 	if (M_in==0)
 	{
 		mexPrintf("%s\n\n",E_NoInputs);
@@ -152,7 +129,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 		mxDestroyArray(rules);
 		return 2;
 	}
-	
+
 	if (M_R<M_out)
 	{
 		mexPrintf("%s\n\n",E_NoRules);
@@ -168,7 +145,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 	size_t *num_rules = new size_t[M_out];
 	for (i=0;i<M_out;i++)
 		*(num_rules+i)=0;
-		
+
 	double *low_in = new double[M_in];
 	double *high_in = new double[M_in];
 	double *low_out = new double[M_out];
@@ -186,7 +163,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 	// Counts and checks rules
 	for (l=0;l<M_R;l++)
 	{
-		temp = mxGetFieldByNumber(rules,l,mxGetFieldNumber(rules,"weight")); // Weight must be 1
+		temp = mxGetProperty(rules,l,"Weight");
 		if (mxGetScalar(temp)!=1)
 		{
 			mexPrintf("%s %lu %s 1.\n\n",O_RuleWeigh,l+1,O_DifferentOf);
@@ -200,8 +177,8 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 			delete [] high_out;
 			return 3;
 		}
-		
-		temp = mxGetFieldByNumber(rules,l,mxGetFieldNumber(rules,"connection")); // Connection must be 1
+
+		temp = mxGetProperty(rules,l,"Connection"); // Connection must be 1
 		if (mxGetScalar(temp)!=1)
 		{
 			mexPrintf("%s %lu %s 1, AND.\n\n",O_RuleConnection,l+1,O_DifferentOf);
@@ -215,7 +192,8 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 			delete [] high_out;
 			return 4;
 		}
-		consequent = mxGetFieldByNumber(rules,l,mxGetFieldNumber(rules,"consequent")); // Get the consequent (struct)
+
+		consequent = mxGetProperty(rules,l,"Consequent"); // Get the consequent (struct)
 		if (mxGetN(consequent)!=M_out)
 		{
 			mexPrintf("%s %lu %s",O_ConsequentSize,l+1,O_IsNotCorrect);
@@ -229,6 +207,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 			delete [] high_out;
 			return 5;
 		}
+
 		check_conseq = 0; // Check that only 1 consequent for rule are defined
 		for (i=0;i<M_out;i++)
 		{
@@ -254,7 +233,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 			}
 		}
 	}
-	
+
 	// Create the System
 	Sist.initialize(M_in,M_out,num_rules);
 
@@ -263,18 +242,17 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 	for (j=0;j<M_out;j++)
 	{
 		*(num_rules+j) = 0;
-		limits = mxGetFieldByNumber(outputs,j,mxGetFieldNumber(outputs,"range")); // Get j-output range
+		limits = mxGetProperty(outputs,j,"Range");
 		low_out[j] = *mxGetPr(limits);
 		high_out[j] = *(mxGetPr(limits) + 1);
-}
+	}
 
 	for (i=0;i<M_in;i++)
 	{
-		limits = mxGetFieldByNumber(inputs,i,mxGetFieldNumber(inputs,"range"));// Get i-input range
+		limits = mxGetProperty(inputs,i,"Range");
 		low_in[i] = *mxGetPr(limits);
 		high_in[i] = *(mxGetPr(limits) + 1);
 	}
-
 	Sist.in_low(low_in);
 	Sist.in_high(high_in);
 	Sist.out_low(low_out);
@@ -287,7 +265,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 
 	for (l=0;l<M_R;l++)
 	{
-		antecedent = mxGetFieldByNumber(rules,l,mxGetFieldNumber(rules,"antecedent")); // Get the antecedent (struct)
+		antecedent = mxGetProperty(rules,l,"Antecedent");
 		if (mxGetN(antecedent)!=M_in)
 		{
 			mexPrintf("%s %lu %s",O_AntecedentSize,l+1,O_IsNotCorrect);
@@ -298,29 +276,22 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 			delete [] num_rules;
 			return 1;
 		}
-		consequent = mxGetFieldByNumber(rules,l,mxGetFieldNumber(rules,"consequent")); // Get the consequent (struct)
+
+		consequent = mxGetProperty(rules,l,"Consequent"); // Get the consequent (struct)
 		for (i=0;i<M_out;i++)
 		{
 			v_conseq = (int)*(mxGetPr(consequent) + i);
 			v_conseq--; // Number of consequent for the rule
 			if (v_conseq>=0)
 			{
-				TSK = mxGetFieldByNumber(outputs,i,mxGetFieldNumber(outputs,"mf")); // Get the consequent of the output 'i' (struct) // Mf
-				if (mxGetString(mxGetFieldByNumber(TSK,v_conseq,mxGetFieldNumber(TSK,"type")),TSKtype, MAX_SIZE_TYPE_NAME)) // Consecuent type (TSK or Singleton)
-				{
-					mexPrintf("%s\n",E_Model);
-					mexPrintf("%s %lu.\n\n",E_Conseq,l+1);
-					mxDestroyArray(inputs);
+				TSK = mxGetProperty(outputs,i,"MembershipFunctions"); // Get the consequent of the output 'i' (struct) // MembershipFunctions
+				
+				temp = mxGetProperty(TSK,v_conseq,"type");
+				mexCallMATLAB(1, char_array, 1, &temp, "char"); mxGetString(char_array[0],TSKtype,MAX_CHAR_LONG); // Dirty way to convert String to char array
 
-					mxDestroyArray(outputs);
-					mxDestroyArray(rules);
-					mxDestroyArray(antecedent);
-					mxDestroyArray(consequent);
-					delete [] num_rules;
-					return 1;
-				}
 				constant = !strcasecmp(TSKtype,"CONSTANT");
 				linear = !strcasecmp(TSKtype,"LINEAR");
+
 				for (p=0;p<M_in;p++)
 				{
 					R = Sist.readRule(i,num_rules[i]);
@@ -335,6 +306,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 						delete [] num_rules;
 						return 1;
 					}
+
 					v_antec = (int)*(mxGetPr(antecedent) + p);
 					v_antec--; // Number of antecedent for the rule
 					if (v_antec<0) // For use of 'none' in MATLAB to select ANYMF membership function
@@ -342,7 +314,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 						T = ANYMF;
 						if (R->changeFunction(T,p))
 						{
-							mexPrintf("%s %s %lu, %s %lu.\n\n",E_MFTypeDef,l+1,p+1,O_Rule,O_Input);
+							mexPrintf("%s %s %lu, %s %lu\n\n",E_MFTypeDef,l+1,p+1,O_Rule,O_Input);
 							mxDestroyArray(inputs);
 							mxDestroyArray(outputs);
 							mxDestroyArray(rules);
@@ -355,19 +327,11 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 					}
 					else
 					{
-						mf_antec = mxGetFieldByNumber(inputs,p,mxGetFieldNumber(inputs,"mf")); // Get the antecedent of the input 'p' (struct) // Mf
-						if (mxGetString(mxGetFieldByNumber(mf_antec,v_antec,mxGetFieldNumber(mf_antec,"type")),type, MAX_SIZE_TYPE_NAME)) // Read the membership function type
-						{
-							mexPrintf("%s\n",E_Model);
-							mexPrintf("%s %lu, %s %lu.\n\n",E_MFType,l+1,O_Input,p+1);
-							mxDestroyArray(inputs);
-							mxDestroyArray(outputs);
-							mxDestroyArray(rules);
-							mxDestroyArray(antecedent);
-							mxDestroyArray(consequent);
-							delete [] num_rules;
-							return 1;
-						}
+						mf_antec = mxGetProperty(inputs,p,"MembershipFunctions"); // Get the antecedent of the input 'p' (struct) // Mf
+
+						temp = mxGetProperty(mf_antec,v_antec,"Type");
+						mexCallMATLAB(1, char_array, 1, &temp, "char"); mxGetString(char_array[0],type,MAX_CHAR_LONG); // Dirty way to convert String to char array
+
 						for (int iT=0;iT<=(int)ZMF;iT++) // Check if the MF type
 						{
 							T = (TYPE_MF)iT;
@@ -376,7 +340,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 						}
 						if (T>ZMF)
 						{
-							mexPrintf("%s %s %lu, %s %lu.\n\n",E_BadMF,O_Rule,l+1,O_Input,p+1);
+							mexPrintf("%s %s %lu, %s %lu\n\n",E_BadMF,O_Rule,l+1,O_Input,p+1);
 							mxDestroyArray(inputs);
 							mxDestroyArray(outputs);
 							mxDestroyArray(rules);
@@ -385,9 +349,12 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 							delete [] num_rules;
 							return 1;
 						}
-						if (MF_PARAM_NUMBER[(int)T]!=mxGetN(mxGetFieldByNumber(mf_antec,v_antec,mxGetFieldNumber(mf_antec,"params")))) 
+
+						temp = mxGetProperty(mf_antec,v_antec,"Parameters");
+
+						if (MF_PARAM_NUMBER[(int)T]>mxGetN(temp)) 
 						{
-							mexPrintf("%s %s %lu. %s %lu.\n\n",E_NumberParam,O_MF,p+1,O_Rule,l+1);
+							mexPrintf("%s %s %lu. %s %lu\n\n",E_NumberParam,O_MF,p+1,O_Rule,l+1);
 							mxDestroyArray(inputs);
 							mxDestroyArray(outputs);
 							mxDestroyArray(rules);
@@ -398,7 +365,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 						}
 						if (R->changeFunction(T,p))
 						{
-							mexPrintf("%s %s %lu, %s %lu.\n\n",E_MFTypeDef,l+1,p+1,O_Rule,O_Input);
+							mexPrintf("%s %s %lu, %s %lu\n\n",E_MFTypeDef,l+1,p+1,O_Rule,O_Input);
 							mxDestroyArray(inputs);
 							mxDestroyArray(outputs);
 							mxDestroyArray(rules);
@@ -408,9 +375,12 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 							return 7;
 						}
 						P = createMF(T);
+
 						for (v=0;v<P->num_params();v++)
 						{
-							d=*(mxGetPr(mxGetFieldByNumber(mf_antec,v_antec,mxGetFieldNumber(mf_antec,"params")))+v);
+							d=*(mxGetPr(temp)+v); // temp is 'mf_antec' before
+							
+							
 							// Change the parameters for use with MATLAB (change the definition of Gauss functions)
 							if (T==GAUSSMF || T==GAUSS2MF)
 							{
@@ -439,6 +409,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 							return 8;
 						}
 					}
+
 					if(R->changeFunction(*P,p))
 					{
 						mexPrintf("%s\n\n",E_MFDef);
@@ -454,11 +425,13 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 					}
 					delete P;
 					P = NULL;
+
 					for (v=0;v<=M_in;v++)
 					{
 						if(linear)
 						{
-							d = *(mxGetPr(mxGetFieldByNumber(TSK,v_conseq,mxGetFieldNumber(TSK,"params")))+v);
+							temp = mxGetProperty(TSK,v_conseq,"Parameters");
+							d = *(mxGetPr(temp)+v);
 							if (v!=M_in)
 							{
 								if(R->changeTSK(d,v+1))
@@ -506,7 +479,7 @@ int FLT::FIS2System(const mxArray *FIS, System &S)
 							}
 							else
 							{
-								d = *(mxGetPr(mxGetFieldByNumber(TSK,v_conseq,mxGetFieldNumber(TSK,"params")))+v);
+								d = *(mxGetPr(temp)+v); // temp is TSK before
 								if(R->changeTSK(d,0))
 								{
 									mexPrintf("%s\n\n",E_ParamConseq);
@@ -538,9 +511,11 @@ int FLT::System2FIS(System &S, mxArray *FIS)
 	const size_t in = S.inputs();
 	const size_t out = S.outputs();
 	size_t *M = new size_t[out];
-	
+
 	Membership *P;
 	Rule *R;
+
+	char type[MAX_CHAR_LONG];
 	
 	for (i=0;i<out;i++)
 	{
@@ -553,7 +528,6 @@ int FLT::System2FIS(System &S, mxArray *FIS)
 			return 1;
 		}
 	}
-	char type[MAX_CHAR_LONG];
 
 	if (out<1)
 	{
@@ -568,37 +542,46 @@ int FLT::System2FIS(System &S, mxArray *FIS)
 		return 3;
 	}
 
-	// Create the FIS struct
-	mxSetFieldByNumber(FIS,0,0,mxCreateString(U_FISName));
-	mxSetFieldByNumber(FIS,0,1,mxCreateString("sugeno"));
-	mxSetFieldByNumber(FIS,0,2,mxCreateString("prod"));
-	mxSetFieldByNumber(FIS,0,3,mxCreateString("probor"));
-	mxSetFieldByNumber(FIS,0,4,mxCreateString("wtaver"));
-	mxSetFieldByNumber(FIS,0,5,mxCreateString("prod"));
-	mxSetFieldByNumber(FIS,0,6,mxCreateString("max"));
 
-	// Create the input struct
-	mwSize dim[] = {1,in};
-	const char* InOutNames[] = {"name","range","mf"};
-	const char* mfNames[] = {"name","type","params"};
-	mxArray *inputs = mxCreateStructArray(2,dim,3,InOutNames);
-	char char_num[MAX_CHAR_LONG], inputName[MAX_CHAR_LONG], nom_mf[MAX_CHAR_LONG];
+	// Create the input struct -----
+	char inputName[MAX_CHAR_LONG], nom_mf[MAX_CHAR_LONG];
 	mxArray *range, *mf, *param;
-	mxArray *outputs;
 	double d;
 	TYPE_MF temp;
 
+	mxArray *inputs = mxGetProperty(FIS,0,"Inputs"); // Get the input
+	if(!inputs)
+	{
+		mexPrintf("Error reading ''Input'' fisvar.\n");
+		delete [] M;
+		return 1;
+	}
 	for (i=0;i<in;i++)
 	{
 		sprintf(&inputName[0],"%s%lu",U_FISInput,i+1);
-		mxSetFieldByNumber(inputs,i,0,mxCreateString(inputName));
-		range = mxCreateDoubleMatrix(1,2,mxREAL);
+
+		mxSetProperty(inputs, i, "Name", mxCreateString(inputName)); // Change the name
+
+		range = mxGetProperty(inputs,i,"Range"); // Get the range vector
+		if(!range)
+		{
+			mexPrintf("Error reading inputs ''Range'' values.\n");
+			delete [] M;
+			return 1;
+		}
 		*(mxGetPr(range)) = S.in_low(i);
-		*(mxGetPr(range)+1) = S.in_high(i);
-		mxSetFieldByNumber(inputs,i,1,range);
-		dim[1] = L;
-		mf = mxCreateStructArray(2,dim,3,mfNames);
+		*(mxGetPr(range)+1) = S.in_high(i); // Change the range vector
+
+		mxSetProperty(inputs,i,"Range",range); // Save the new range vector
 		
+		mf = mxGetProperty(inputs,i,"MembershipFunctions"); // Get the Membership function structure
+		if(!mf)
+		{
+			mexPrintf("Error reading inputs ''MembershipFunctions'' values.\n");
+			delete [] M;
+			return 1;
+		}
+
 		index=0;
 		for (j=0;j<out;j++)
 		{
@@ -608,7 +591,6 @@ int FLT::System2FIS(System &S, mxArray *FIS)
 				if (R==NULL)
 				{
 					delete [] M;
-
 					return 4;
 				}
 				P = R->readFunction(i);
@@ -619,13 +601,17 @@ int FLT::System2FIS(System &S, mxArray *FIS)
 				}
 				
 				sprintf(nom_mf,"%s%lu%s%lu%s%lu",U_RuleAbbreviation,r+1,U_InputAbbreviation,i+1,U_OutputAbreviation,j+1);
-				mxSetFieldByNumber(mf,index,0,mxCreateString(nom_mf));
+				mxSetProperty(mf,index,"Name",mxCreateString(nom_mf)); // Save the new name of the Membership Function
+
 				temp = P->type();
 				for (p=0;p<=strlen(MF_NAMES[(int)temp]);p++)
 					type[p] = tolower(MF_NAMES[(int)temp][p]);
 					
-				mxSetFieldByNumber(mf,index,1,mxCreateString(type));
+				mxSetProperty(mf,index,"Type",mxCreateString(type)); // Save the new type of the Membership Function
+
 				param = mxCreateDoubleMatrix(1,P->num_params(),mxREAL); // Do not use MF_PARAM_NUMBER[(int)temp], because P->num_params() are more general
+
+
 				for (p=0;p<P->num_params();p++)
 					*(mxGetPr(param)+p) = P->read(p);
 
@@ -642,66 +628,91 @@ int FLT::System2FIS(System &S, mxArray *FIS)
 					(*(mxGetPr(param) + 2)) = (*(mxGetPr(param)+3))/M_SQRT2;
 					*(mxGetPr(param) + 3) = d;
 				}
-				mxSetFieldByNumber(mf,index,2,param);
+				
+				mxSetProperty(mf,index,"Parameters",param); // Save the new type of the Membership Function
 			}
 		}
-		mxSetFieldByNumber(inputs,i,2,mf);
+		mxSetProperty(inputs,i,"MembershipFunctions",mf);
 	}
-	mxSetFieldByNumber(FIS,0,7,inputs);
+	mxSetProperty(FIS,0,"Inputs",inputs);
+	
 
-	// Create the output struct
-	dim[1] = out;
-	outputs = mxCreateStructArray(2,dim,3,InOutNames);
+	// Create the output struct -----
+	mxArray *outputs = mxGetProperty(FIS,0,"Outputs"); // Get the output
+	if(!outputs)
+	{
+		mexPrintf("Error reading ''Input'' fisvar.\n");
+		delete [] M;
+		return 1;
+	}
+
 	char outputName[MAX_CHAR_LONG];
 	for (j=0;j<out;j++)
 	{
 		sprintf(&outputName[0],"%s%lu",U_FISOutput,j+1);
-		mxSetFieldByNumber(outputs,j,0,mxCreateString(outputName));
-		range = mxCreateDoubleMatrix(1,2,mxREAL);
+		mxSetProperty(outputs, j, "Name", mxCreateString(outputName)); // Change the name
+		range = mxGetProperty(outputs,j,"Range"); // Get the range vector
+		if(!range)
+		{
+			mexPrintf("Error reading output ''Range'' values.\n");
+			delete [] M;
+			return 1;
+		}
 		*(mxGetPr(range)) = S.out_low(j);
-		*(mxGetPr(range) + 1) = S.out_high(j);
-		mxSetFieldByNumber(outputs,j,1,range);
-		dim[1] = M[j];
-		mf = mxCreateStructArray(2,dim,3,mfNames);
+		*(mxGetPr(range)+1) = S.out_high(j); // Change the range vector
+		mxSetProperty(outputs,j,"Range",range); // Save the new range vector
+
+		mf = mxGetProperty(outputs,j,"MembershipFunctions"); // Get the Membership function structure
+		if(!mf)
+		{
+			mexPrintf("Error reading ''MembershipFunctions'' values.\n");
+			delete [] M;
+			return 1;
+		}
 		for (r=0;r<M[j];r++)
 		{
 			R = S.readRule(j,r);
 			sprintf(&nom_mf[0],"%s%lu%s%lu",U_RuleAbbreviation,r+1,U_OutputAbreviation,j + 1);
-			mxSetFieldByNumber(mf,r,0,mxCreateString(nom_mf));
-			mxSetFieldByNumber(mf,r,1,mxCreateString("linear"));
+			mxSetProperty(mf,r,"Name",mxCreateString(nom_mf)); // Save the new name of the Membership Function
+			mxSetProperty(mf,r,"Type",mxCreateString("linear")); // Save the new type of the Membership Function
+			
 			param = mxCreateDoubleMatrix(1,in+1,mxREAL);
 			for (i=0;i<in;i++)
 				*(mxGetPr(param)+i) = R->readTSK(i+1);
 			*(mxGetPr(param)+in) = R->readTSK(0);
-			mxSetFieldByNumber(mf,r,2,param);
+			mxSetProperty(mf,r,"Parameters",param); // Save the new type of the Membership Function
 		}
-		mxSetFieldByNumber(outputs,j,2,mf);
+		mxSetProperty(outputs,j,"MembershipFunctions",mf);
 	}
-	mxSetFieldByNumber(FIS,0,8,outputs);
+	mxSetProperty(FIS,0,"Outputs",outputs);
 
-	// Create the rule struct
-	dim[1] = L;
-	const char* ruleNames[] = {"antecedent","consequent","weight","connection"};
-	mxArray *rules = mxCreateStructArray(2,dim,4,ruleNames);
-	mxArray *antecedent, *consequent;
-	size_t input = 0, output = 0, value;
-	index = 0;
+	// Create the rule struct -----
+	index=0;
 	for (j=0;j<out;j++)
 	{
 		for (r=0;r<M[j];r++,index++)
 		{
-			antecedent = mxCreateDoubleMatrix(1,in,mxREAL);
-			mxSetFieldByNumber(rules,index,0,antecedent);
-			for (i=0;i<in;i++)
-				*(mxGetPr(antecedent)+i) = index + 1;
-			consequent = mxCreateDoubleMatrix(1,out,mxREAL);
-			*(mxGetPr(consequent)+j) = (r + 1);
-			mxSetFieldByNumber(rules,index,1,consequent);
-			mxSetFieldByNumber(rules,index,2,mxCreateDoubleScalar(1)); // Weight=1
-			mxSetFieldByNumber(rules,index,3,mxCreateDoubleScalar(1)); // Connection=1
+			mxArray *newRule = mxCreateDoubleMatrix(1,in+out+2,mxREAL);
+			mxDouble *pointerNewRule = mxGetPr(newRule);
+			for (i=0;i<in;i++,pointerNewRule++)
+				*pointerNewRule = index + 1; // Antecedents (+1 because MATLAB arrays start in 1)
+		
+			*(pointerNewRule + j) = r + 1; // Consequents (+1 because MATLAB arrays start in 1)
+			pointerNewRule += out;
+
+			*pointerNewRule = 1; // Weight
+			pointerNewRule++;
+			*pointerNewRule = 1; // Connection
+
+			mxArray *newFIS;
+			mxArray *parameters[2];
+			parameters[0] = FIS;
+			parameters[1] = newRule;
+			mexCallMATLAB(1,&newFIS,2,parameters,"addRule"); // I don't like using mexCallMATLAB here, but I don't know how to do it any other way.
+			mxSetProperty(FIS,0,"Rules",mxGetProperty(newFIS,0,"Rules"));
 		}
 	}
-	mxSetFieldByNumber(FIS,0,9,rules);
+	
 	delete [] M;
 	return 0;
 }
