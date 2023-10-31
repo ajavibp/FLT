@@ -112,7 +112,7 @@ namespace FLT // Use the FTL (Fuzzy Logic Tools) namespace
 			#define E_NoSugeno "Model 'type' should be 'sugeno'."
 			#define E_NoOutputs "Error, the model has not any Output."
 			#define E_NoInputs "Error, the model has not any Input."
-			#define E_NoRules "Error, some Outputs of the model have not any Rule."
+			#define E_NoRules "Error, some model outputs do not have any rules."
 			#define E_No1Conseq "Only one consequent for rule is allowed."
 			#define E_SameIns "All models must have the same inputs."
 			#define E_NoCoherent "The Controller is not coherent with the Plant."

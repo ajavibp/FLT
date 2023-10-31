@@ -5,7 +5,6 @@
     Collaborators:
     JOSE MANUEL ANDUJAR, andujar@diesia.uhu.es
     AGUSTIN JIMENEZ AVELLO, agustin.jimenez@upm.es
-    MARIANO J. AZNAR, marianojose.aznar@alu.uhu.es
     BASIL M. AL-HADITHI, basil.alhadithi@upm.es
 
     DPTO. DE ING. ELECTRONICA, DE SISTEMAS INFORMATICOS Y AUTOMATICA
