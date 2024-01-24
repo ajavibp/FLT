@@ -1,4 +1,4 @@
-Copyright (C) 2004-2023
+Copyright (C) 2004-2024
     ANTONIO JAVIER BARRAGAN, antonio.barragan@diesia.uhu.es
     http://uhu.es/antonio.barragan
 
